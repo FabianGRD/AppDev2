@@ -1,6 +1,7 @@
 package UI;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -8,27 +9,65 @@ public class Menu extends JFrame
 {
     JFrame frame;
     JButton login, register, exit;
-    JButton profil, creditRequest;
     JPanel panel;
+    JTextField username, password;
+    JLabel usernameLable, passwordLable;
+    GridBagConstraints c = new GridBagConstraints();
+
     public Menu(){
         createFrame();
     }
 
     public void createFrame(){
         frame = new JFrame();
-        frame.setSize(900,750);
+        frame.setSize(800,700);
         frame.setVisible(true);
+        frame.setLayout(new GridBagLayout());
+        frame.setBackground(Color.black);
+
     }
 
-    public void createLogin(){
-        login = new JButton("Login");
-        register = new JButton("Register");
-        exit = new JButton("Exit");
+    public void createLogin()
+    {
         panel = new JPanel();
-        panel.add(login);
-        panel.add(register);
-        panel.add(exit);
+        panel.setPreferredSize(new Dimension(750, 600));
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 0;
+        usernameLable = new JLabel("Username: ");
+        panel.add(usernameLable, c);
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 0;
+        username = new JTextField(30);
+        panel.add(username, c);
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 1;
+        passwordLable = new JLabel("Passwort: ");
+        panel.add(passwordLable, c);
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 1;
+        password = new JPasswordField(30);
+        panel.add(password, c);
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 2;
+        login = new JButton("Login");
+        register = new JButton("Registrieren");
+        exit = new JButton("Schließen");
+
+        panel.add(login, c);
+        panel.add(register, c);
+        panel.add(exit, c);
         frame.add(panel);
+
         frame.revalidate();
         frame.repaint();
 
@@ -38,49 +77,23 @@ public class Menu extends JFrame
                 frame.remove(panel);
                 frame.revalidate();
                 frame.repaint();
-                createMenuCustomer();
+                checkLogin();
             }
         });
     }
 
-    public void createMenuCustomer(){
-        panel = new JPanel();
-        profil = new JButton("Profil");
-        creditRequest = new JButton("Kredit Anfrage");
-        exit = new JButton("Exit");
-
-        panel.add(profil);
-        panel.add(creditRequest);
-        panel.add(exit);
-
-        createTableWithRequests();
-        frame.add(panel);
-        frame.revalidate();
-        frame.repaint();
-    }
-
-    public void createTableWithRequests(){
-        String[] columnNames = {"First Name",
-                "Last Name",
-                "Sport",
-                "# of Years",
-                "Vegetarian"};
-
-        Object[][] data = {
-                {"Kathy", "Smith",
-                        "Snowboarding", 5, true},
-                {"John", "Doe",
-                        "Rowing", 5, true},
-                {"Sue", "Black",
-                        "Knitting", 5,true},
-                {"Jane", "White",
-                        "Speed reading", 5, true},
-                {"Joe", "Brown",
-                        "Pool", 5, true}
-        };
-
-        JTable table = new JTable(data, columnNames);
-
-        panel.add(table);
+    private void checkLogin()
+    {
+        if(username.getText().toLowerCase().equals("admin"))
+        {
+            AdminMenu adminMenu = new AdminMenu(frame);
+            adminMenu.createMenuAdmin();
+        } else if(username.getText().toLowerCase().equals("kunde"))
+        {
+            CustomerMenu customerMenu = new CustomerMenu(frame);
+            customerMenu.createMenuCustomer();
+        }else {
+            createLogin();
+        }
     }
 }
