@@ -29,7 +29,6 @@ public class Menu extends JFrame
         panel.add(register);
         panel.add(exit);
         frame.add(panel);
-        frame.invalidate();
         frame.validate();
         frame.repaint();
 
@@ -37,8 +36,7 @@ public class Menu extends JFrame
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.removeAll();
-                panel.removeAll();
-                frame.invalidate();
+                frame.remove(panel);
                 frame.validate();
                 frame.repaint();
                 createMenuCustomer();
@@ -57,7 +55,6 @@ public class Menu extends JFrame
         panel.add(creditRequest);
         panel.add(exit);
         createTableWithRequests();
-        frame.invalidate();
         frame.validate();
         frame.repaint();
     }
