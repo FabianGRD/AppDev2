@@ -29,15 +29,14 @@ public class Menu extends JFrame
         panel.add(register);
         panel.add(exit);
         frame.add(panel);
-        frame.validate();
+        frame.revalidate();
         frame.repaint();
 
         login.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frame.removeAll();
                 frame.remove(panel);
-                frame.validate();
+                frame.revalidate();
                 frame.repaint();
                 createMenuCustomer();
             }
@@ -45,35 +44,43 @@ public class Menu extends JFrame
     }
 
     public void createMenuCustomer(){
-        createFrame();
         panel = new JPanel();
         profil = new JButton("Profil");
         creditRequest = new JButton("Kredit Anfrage");
         exit = new JButton("Exit");
-        panel = new JPanel();
+
         panel.add(profil);
         panel.add(creditRequest);
         panel.add(exit);
+
         createTableWithRequests();
-        frame.validate();
+        frame.add(panel);
+        frame.revalidate();
         frame.repaint();
     }
 
     public void createTableWithRequests(){
-        login = new JButton("Login");
-        register = new JButton("Register");
-        exit = new JButton("Exit");
+        String[] columnNames = {"First Name",
+                "Last Name",
+                "Sport",
+                "# of Years",
+                "Vegetarian"};
 
-        String[] columnNames = {"ID",
-                "Kredit Name",
-                "Verwendungszweck",
-                "Summe",
-                "Zinssatz",
-                "Bonität",
-                "Status"};
-        JTable table = new JTable(null, columnNames);
+        Object[][] data = {
+                {"Kathy", "Smith",
+                        "Snowboarding", 5, true},
+                {"John", "Doe",
+                        "Rowing", 5, true},
+                {"Sue", "Black",
+                        "Knitting", 5,true},
+                {"Jane", "White",
+                        "Speed reading", 5, true},
+                {"Joe", "Brown",
+                        "Pool", 5, true}
+        };
+
+        JTable table = new JTable(data, columnNames);
 
         panel.add(table);
-        frame.add(panel);
     }
 }
