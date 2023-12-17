@@ -2,13 +2,12 @@ package Database;
 import java.sql.*;
 
 public class DBConnection {
-    static Connection dbConnection = null;
-    private String url = "jdbc:mysql://localhost:3306/AppDev2"; // table details
-    private String username = "root"; // MySQL credentials
-    private String password = "";
-    private Connection con;
+    public String url = "jdbc:mysql://localhost:3306/appdev2"; // table details
+    public String username = "root"; // MySQL credentials
+    public String password = "";
+    public Connection con;
 
-    public DBConnection() {
+    public Connection connectToDB() {
         System.out.println("Connecting database...");
 
         try {
@@ -19,5 +18,7 @@ public class DBConnection {
         } catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         }
+
+        return con;
     }
 }
