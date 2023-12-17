@@ -1,9 +1,9 @@
-import UI.Menu;
+import UI.Login;
+import UI.Menu_alt;
 
 public class Main {
     public static void main( String[] args )
     {
-        Menu menu = new Menu();
-        menu.createLogin();
+        Login login = new Login();
     }
 }
