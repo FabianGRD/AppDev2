@@ -60,8 +60,10 @@ public class Login extends JFrame{
                 try(ResultSet resultSet = stmt.executeQuery()){
                     if (resultSet.next()) {
                         String selectedPassword = resultSet.getString("password");
+                        String selectedCustomerId = resultSet.getString("customer");
                         if(password.getText().equals(selectedPassword)){
-                            new CustomerMenu();
+                            setVisible(false);
+                            new CustomerMenu(dbConnection, Integer.parseInt(selectedCustomerId));
                         }
                     }else{
                         username.setText("");
