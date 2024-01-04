@@ -16,7 +16,6 @@ public class CustomerMenu extends JFrame {
     private JButton askForCreditButton;
     private JButton logoutButton;
     private JList<CreditTableRow> creditList;
-
     private DefaultListModel<CreditTableRow> listModel;
 
     public CustomerMenu(Connection dbConnection, int customerId){
@@ -27,21 +26,26 @@ public class CustomerMenu extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Initialize list model
         listModel = new DefaultListModel<>();
         creditList.setModel(listModel);
-        creditList.setCellRenderer(new CreditListRenderer()); // Custom renderer
+        creditList.setCellRenderer(new CreditListRenderer());
 
         getAllCustomerCredits(dbConnection, customerId);
         askForCreditButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e) {
-                //String selectedUserType = (String) userTypeComboBox.getSelectedItem();
+                setVisible(false);
                 new CreditMenu(dbConnection, customerId);
             }
         });
 
-
+        logoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+                new Login(dbConnection);
+            }
+        });
     }
 
     private void getAllCustomerCredits(Connection dbConnection, int customerId ) {
@@ -50,17 +54,16 @@ public class CustomerMenu extends JFrame {
             PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
             stmt.setInt(1, customerId);
             try(ResultSet resultSet = stmt.executeQuery()){
-                if (resultSet.next()) {
+                while (resultSet.next()) {
                     CreditTableRow row = new CreditTableRow();
                     row.CreditName = resultSet.getString("CreditName");
                     row.CreditSum = resultSet.getString("CreditSum");
                     row.TimeRange = resultSet.getString("CreditTimeRange");
+                    row.PaymentInterval = resultSet.getString("PaymentInterval");
                     row.InterestRate = GetInterestRate(dbConnection, resultSet.getInt("InterestRateId"));
-                    row.Status = "genehmigt";
+                    row.Status = resultSet.getString("Status");
 
                     listModel.addElement(row);
-                }else{
-                    System.out.println("Kein Kredit gefunden!");
                 }
             }
         }catch (SQLException exception){
@@ -100,6 +103,7 @@ public class CustomerMenu extends JFrame {
                 setText("Credit: " + credit.CreditName +
                         ", Summe: " + credit.CreditSum+
                         ", Zeitspanne: " + credit.TimeRange+
+                        ", Interval: " + credit.PaymentInterval+
                         ", Zins: " + credit.InterestRate+
                         ", Status: " + credit.Status);
             }

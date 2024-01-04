@@ -1,5 +1,6 @@
 package UI;
 
+import Backend.CreditStatus;
 import Backend.CreditTimeRange;
 
 import javax.swing.*;
@@ -7,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.Console;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +22,7 @@ public class CreditMenu extends JFrame{
     private JComboBox payTimeRange;
     private JTextField payAmountPerTimeSlot;
     private JButton acceptCredit;
-    private JButton abbrechenButton;
+    private JButton cancelButton;
     private JTextField purposeOfUse;
 
     public CreditMenu(Connection dbConnection, int customerId){
@@ -39,6 +39,14 @@ public class CreditMenu extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 SetTimeRangeValues();
                 CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+            }
+        });
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+                new CustomerMenu(dbConnection, customerId);
             }
         });
 
@@ -73,7 +81,7 @@ public class CreditMenu extends JFrame{
 
         try {
             dbConnection.setAutoCommit(false);
-            PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO credit(CustomerId, CreditSum, CreditTimeRange, PaymentInterval, CreditName, InterestRateId) VALUES (?,?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO credit(CustomerId, CreditSum, CreditTimeRange, PaymentInterval, CreditName, InterestRateId, Status) VALUES (?,?,?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
 
             stmt.setInt(1, customerId);
             stmt.setInt(2, Integer.parseInt(creditSum.getText()));
@@ -81,6 +89,7 @@ public class CreditMenu extends JFrame{
             stmt.setString(4, payTimeRange.getSelectedItem().toString());
             stmt.setString(5, purposeOfUse.getText());
             stmt.setInt(6, intrestRateId);
+            stmt.setString(7, GetCreditStatus(dbConnection, customerId, Integer.parseInt(creditSum.getText())).toString());
             stmt.executeUpdate();
             dbConnection.commit();
         }catch(Exception e){
@@ -88,7 +97,33 @@ public class CreditMenu extends JFrame{
             return;
         }
 
+        setVisible(false);
         new CustomerMenu(dbConnection, customerId);
+    }
+
+    private CreditStatus GetCreditStatus( Connection dbConnection, int customerId, int creditSum ) throws SQLException {
+
+        try {
+            PreparedStatement stmt = dbConnection.prepareStatement("SELECT bonitaet FROM customer WHERE ID = ?;");
+            stmt.setInt(1, customerId);
+
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                    String bonitaet = resultSet.getString("bonitaet");
+                    if(bonitaet == null){
+                        return CreditStatus.BONITAET_NICHT_ERFASST;
+                    }else if(creditSum <= Integer.parseInt(bonitaet)){
+                        return CreditStatus.GENEHMIGT;
+                    }else{
+                        return CreditStatus.OFFEN;
+                    }
+                }
+            }
+        }catch(Exception e){
+            System.out.println("Kredit konnte nicht gespeichert werden " + e);
+            throw new SQLException("Bonität Fehler");
+        }
+        return CreditStatus.OFFEN;
     }
 
     private int loadInitialValues(Connection dbConnection)

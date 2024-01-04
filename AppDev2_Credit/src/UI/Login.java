@@ -1,5 +1,6 @@
 package UI;
 
+import Backend.WorkerPermission;
 import Database.DBConnection;
 
 import javax.swing.*;
@@ -27,14 +28,20 @@ public class Login extends JFrame{
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //String selectedUserType = (String) userTypeComboBox.getSelectedItem();
                 checkLogin(dbConnection);
             }
         });
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //String selectedUserType = (String) userTypeComboBox.getSelectedItem();
                 registerCustomer(dbConnection);
             }
         });
@@ -47,33 +54,67 @@ public class Login extends JFrame{
 
     private void checkLogin(Connection dbConnection)
     {
-        if(username.getText().toLowerCase().equals("admin"))
-        {
-            setVisible(false);
-            new AdminMenu();
-        } else
-        {
-            String selectQuery = "SELECT * FROM login WHERE username = ?";
-            try {
-                PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
-                stmt.setString(1, username.getText());
-                try(ResultSet resultSet = stmt.executeQuery()){
-                    if (resultSet.next()) {
-                        String selectedPassword = resultSet.getString("password");
-                        String selectedCustomerId = resultSet.getString("customer");
-                        if(password.getText().equals(selectedPassword)){
+        String selectQuery = "SELECT * FROM login WHERE username = ?";
+        try {
+            PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
+            stmt.setString(1, username.getText());
+
+            try(ResultSet resultSet = stmt.executeQuery()){
+                if (resultSet.next()) {
+                    String selectedPassword = resultSet.getString("password");
+                    String selectedCustomerId = resultSet.getString("customer");
+                    String selectedWorkerId = resultSet.getString("worker");
+                    if(password.getText().equals(selectedPassword)){
+                        if(selectedCustomerId != null) {
                             setVisible(false);
                             new CustomerMenu(dbConnection, Integer.parseInt(selectedCustomerId));
+                        }else if(selectedWorkerId != null){
+                            GetWorkerPermission(dbConnection, Integer.parseInt(selectedWorkerId));
                         }
-                    }else{
-                        username.setText("");
-                        password.setText("");
-                        System.out.println("Kein user gefunden!");
+                    }
+                }else{
+                    username.setText("");
+                    password.setText("");
+                    System.out.println("Kein user gefunden!");
+                }
+            }
+        }catch (SQLException exception){
+            System.out.println(exception);
+        }
+    }
+    private void GetWorkerPermission(Connection dbConnection, int workerId) {
+        try {
+            String selectQuery = "SELECT * FROM worker WHERE ID = ?";
+            PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
+            stmt.setInt(1, workerId);
+
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                        WorkerPermission actualPermission = WorkerPermission.valueOf(resultSet.getString("permission"));
+                        switch (actualPermission) {
+                            case WORKER:
+                                setVisible(false);
+                                new WorkerMenu(dbConnection, workerId);
+                                break;
+                            case ADMIN:
+                                setVisible(false);
+                                new AdminMenu(dbConnection, workerId);
+                                break;
+                            case SUPERIOR:
+                                setVisible(false);
+                                new AdminMenu(dbConnection, workerId);
+                                break;
+                            case MANAGER:
+                                setVisible(false);
+                                new AdminMenu(dbConnection, workerId);
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
-            }catch (SQLException exception){
-                System.out.println(exception);
+            } catch (Exception e) {
+                System.out.println(e);
             }
-        }
     }
 }

@@ -16,6 +16,7 @@ public class RegisterForm extends JFrame{
     private JTextField postalcode;
     private JTextField city;
     private JButton registerButton;
+    private JButton returnButton;
 
     public RegisterForm(Connection dbConnection, JTextField usernameInput, JPasswordField passwordInput){
         setContentPane(panel);
@@ -32,8 +33,15 @@ public class RegisterForm extends JFrame{
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e) {
-                //String selectedUserType = (String) userTypeComboBox.getSelectedItem();
                 registerCustomer(dbConnection);
+            }
+        });
+
+        returnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed( ActionEvent e) {
+                setVisible(false);
+                new Login(dbConnection);
             }
         });
     }
@@ -80,9 +88,9 @@ public class RegisterForm extends JFrame{
             }
         }else {
             System.out.println("Sie müssen alle Felder ausfüllen");
-
         }
 
+        setVisible(false);
         new Login(dbConnection);
     }
 }
