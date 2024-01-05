@@ -1,8 +1,6 @@
 package UI;
 
-import Backend.CreditStatus;
-import Backend.CreditTableRow;
-import Backend.CustomerTableRow;
+import Backend.*;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -14,9 +12,10 @@ import java.sql.ResultSet;
 public class WorkerMenu extends JFrame {
     private JPanel panel;
     private JButton logoutButton;
-    private JButton showAllCredits;
+    private JButton showCustomers;
     private JList<CustomerTableRow> customerList;
     private JList<CreditTableRow>  creditList;
+    private JButton showCredits;
     private DefaultListModel<CreditTableRow> creditListModel;
     private DefaultListModel<CustomerTableRow> customerListModel;
 
@@ -46,6 +45,22 @@ public class WorkerMenu extends JFrame {
                 new Login(dbConnection);
             }
         });
+
+        showCustomers.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed( ActionEvent e) {
+                setVisible(false);
+                new ShowCustomerMenu(dbConnection, workerId);
+            }
+        });
+
+        showCredits.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed( ActionEvent e) {
+                setVisible(false);
+                new ShowCustomerCredits(dbConnection, workerId);
+            }
+        });
     }
 
     private void loadInitialValues( Connection dbConnection ) {
@@ -55,7 +70,7 @@ public class WorkerMenu extends JFrame {
                 while (resultSet.next()) {
                     if(resultSet.getString("bonitaet") == null){
                         CustomerTableRow customerTableRow = new CustomerTableRow();
-                        customerTableRow.ID = resultSet.getInt("ID");
+                        customerTableRow.ID = resultSet.getString("ID");
                         customerTableRow.Firstname = resultSet.getString("firstname");
                         customerTableRow.Lastname = resultSet.getString("lastname");
                         customerTableRow.Bonitaet = "Nicht eingetragen";
@@ -70,13 +85,16 @@ public class WorkerMenu extends JFrame {
             try (ResultSet resultSet = stmtCredit.executeQuery()) {
                 while (resultSet.next()) {
                         CreditTableRow creditTableRow = new CreditTableRow();
+                        creditTableRow.ID = resultSet.getInt("ID");
                         creditTableRow.CreditName = resultSet.getString("CreditName");
                         creditTableRow.CreditSum = resultSet.getString("CreditSum");
                         creditTableRow.TimeRange = resultSet.getString("CreditTimeRange");
                         creditTableRow.PaymentInterval = resultSet.getString("PaymentInterval");
                         creditTableRow.Status = resultSet.getString("Status");
 
-                        creditListModel.addElement(creditTableRow);
+                        if(checkSuggestions(dbConnection, creditTableRow.ID)){
+                            creditListModel.addElement(creditTableRow);
+                        }
                 }
             }
 
@@ -85,45 +103,23 @@ public class WorkerMenu extends JFrame {
         }
     }
 
-    private class CreditListRenderer extends DefaultListCellRenderer {
-        public java.awt.Component getListCellRendererComponent(JList list,
-                                                               Object value,
-                                                               int index,
-                                                               boolean isSelected,
-                                                               boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-            if (value instanceof CreditTableRow) {
-                CreditTableRow credit = (CreditTableRow) value;
-                setText("Credit: " + credit.CreditName +
-                        ", Summe: " + credit.CreditSum+
-                        ", Zeitspanne: " + credit.TimeRange+
-                        ", Interval: " + credit.PaymentInterval+
-                        ", Zins: " + credit.InterestRate+
-                        ", Status: " + credit.Status);
+    private boolean checkSuggestions( Connection dbConnection, int originId ) {
+        try {
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT Count(ID) as total FROM `credit` WHERE originId = ?");
+            stmtCredit.setInt(1, originId);
+            try (ResultSet resultSet = stmtCredit.executeQuery()) {
+                if (resultSet.next()) {
+                    int total = resultSet.getInt("total");
+                    if(total < 2){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
             }
-
-            return this;
+        } catch (Exception e) {
+            System.out.println(e);
         }
-    }
-
-    private class CustomerListRenderer extends DefaultListCellRenderer {
-        public java.awt.Component getListCellRendererComponent(JList list,
-                                                               Object value,
-                                                               int index,
-                                                               boolean isSelected,
-                                                               boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-            if (value instanceof CustomerListRenderer) {
-                CustomerTableRow customer = (CustomerTableRow) value;
-                setText("ID: " + customer.ID +
-                        ", Firstname: " + customer.Firstname+
-                        ", Lastname: " + customer.Lastname+
-                        ", Bonitaet: " + customer.Bonitaet);
-            }
-
-            return this;
-        }
+        return true;
     }
 }

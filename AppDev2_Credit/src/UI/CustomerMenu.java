@@ -1,9 +1,9 @@
 package UI;
 
+import Backend.CreditListRenderer;
 import Backend.CreditTableRow;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -22,7 +22,7 @@ public class CustomerMenu extends JFrame {
         setContentPane(panel);
         setVisible(true);
         setTitle("Customer Menu");
-        setSize(500, 400);
+        setSize(700, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -49,13 +49,14 @@ public class CustomerMenu extends JFrame {
     }
 
     private void getAllCustomerCredits(Connection dbConnection, int customerId ) {
-        String selectQuery = "SELECT * FROM credit WHERE CustomerId = ?";
+        String selectQuery = "SELECT * FROM credit WHERE CustomerId = ? AND suggestion = false";
         try {
             PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
             stmt.setInt(1, customerId);
             try(ResultSet resultSet = stmt.executeQuery()){
                 while (resultSet.next()) {
                     CreditTableRow row = new CreditTableRow();
+                    row.ID = resultSet.getInt("ID");
                     row.CreditName = resultSet.getString("CreditName");
                     row.CreditSum = resultSet.getString("CreditSum");
                     row.TimeRange = resultSet.getString("CreditTimeRange");
@@ -88,27 +89,5 @@ public class CustomerMenu extends JFrame {
         }
 
         return "";
-    }
-
-    private class CreditListRenderer extends DefaultListCellRenderer {
-        public java.awt.Component getListCellRendererComponent(JList list,
-                                                               Object value,
-                                                               int index,
-                                                               boolean isSelected,
-                                                               boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-            if (value instanceof CreditTableRow) {
-                CreditTableRow credit = (CreditTableRow) value;
-                setText("Credit: " + credit.CreditName +
-                        ", Summe: " + credit.CreditSum+
-                        ", Zeitspanne: " + credit.TimeRange+
-                        ", Interval: " + credit.PaymentInterval+
-                        ", Zins: " + credit.InterestRate+
-                        ", Status: " + credit.Status);
-            }
-
-            return this;
-        }
     }
 }

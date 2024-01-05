@@ -102,11 +102,11 @@ public class Login extends JFrame{
                                 break;
                             case SUPERIOR:
                                 setVisible(false);
-                                new AdminMenu(dbConnection, workerId);
+                                new SuperiorMenu(dbConnection, workerId);
                                 break;
                             case MANAGER:
                                 setVisible(false);
-                                new AdminMenu(dbConnection, workerId);
+                                new ManagerMenu(dbConnection, workerId);
                                 break;
                             default:
                                 break;

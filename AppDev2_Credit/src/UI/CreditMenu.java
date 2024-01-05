@@ -81,7 +81,7 @@ public class CreditMenu extends JFrame{
 
         try {
             dbConnection.setAutoCommit(false);
-            PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO credit(CustomerId, CreditSum, CreditTimeRange, PaymentInterval, CreditName, InterestRateId, Status) VALUES (?,?,?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO credit(CustomerId, CreditSum, CreditTimeRange, PaymentInterval, CreditName, InterestRateId, Status, suggestion) VALUES (?,?,?,?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
 
             stmt.setInt(1, customerId);
             stmt.setInt(2, Integer.parseInt(creditSum.getText()));
@@ -90,6 +90,7 @@ public class CreditMenu extends JFrame{
             stmt.setString(5, purposeOfUse.getText());
             stmt.setInt(6, intrestRateId);
             stmt.setString(7, GetCreditStatus(dbConnection, customerId, Integer.parseInt(creditSum.getText())).toString());
+            stmt.setBoolean(8, false);
             stmt.executeUpdate();
             dbConnection.commit();
         }catch(Exception e){
