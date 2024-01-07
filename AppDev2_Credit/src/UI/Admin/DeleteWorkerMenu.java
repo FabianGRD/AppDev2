@@ -1,6 +1,7 @@
-package UI;
+package UI.Admin;
 
 import Backend.WorkerBase;
+import UI.Admin.AdminMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -23,12 +24,12 @@ public class DeleteWorkerMenu extends JFrame {
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        loadInitialValues(dbConnection);
+        loadInitialValues(dbConnection, workerId);
 
         deleteWorker.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e) {
-                deleteSelectedWorker(dbConnection);
+                deleteSelectedWorker(dbConnection, workerId);
             }
         });
 
@@ -41,10 +42,11 @@ public class DeleteWorkerMenu extends JFrame {
         });
     }
 
-    private void loadInitialValues( Connection dbConnection ) {
-        String selectQuery = "SELECT * FROM worker";
+    private void loadInitialValues( Connection dbConnection, int workerId ) {
+        String selectQuery = "SELECT * FROM worker WHERE ID != ?";
         try {
             PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
+            stmt.setInt(1, workerId);
             try(ResultSet resultSet = stmt.executeQuery()){
                 while (resultSet.next()) {
                     WorkerBase workerBase = new WorkerBase();
@@ -59,7 +61,7 @@ public class DeleteWorkerMenu extends JFrame {
         }
     }
 
-    private void deleteSelectedWorker(Connection dbConnection){
+    private void deleteSelectedWorker(Connection dbConnection, int workerId){
         WorkerBase workerBase = (WorkerBase) allWorkers.getSelectedItem();
         int selectedIndex = allWorkers.getSelectedIndex();
         String deleteLogin = "DELETE FROM login WHERE worker = (?)";
@@ -76,9 +78,8 @@ public class DeleteWorkerMenu extends JFrame {
 
             dbConnection.commit();
 
-            allWorkers.remove(selectedIndex);
-            revalidate();
-            repaint();
+            allWorkers.removeAllItems();
+            loadInitialValues(dbConnection, workerId);
         }catch (SQLException exception){
             System.out.println(exception);
         }

@@ -1,7 +1,8 @@
-package UI;
+package UI.Customer;
 
 import Backend.CreditListRenderer;
 import Backend.CreditTableRow;
+import UI.Login.Login;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

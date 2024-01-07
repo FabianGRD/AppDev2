@@ -1,6 +1,7 @@
-package UI;
+package UI.Worker;
 
 import Backend.*;
+import UI.Worker.WorkerMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -31,13 +32,12 @@ public class ShowCustomerCredits extends JFrame{
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        loadInitialValues(dbConnection);
+        loadInitialValues(dbConnection, workerId);
 
         payTimeRange.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e) {
                 SetTimeRangeValues();
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
             }
         });
 
@@ -52,38 +52,50 @@ public class ShowCustomerCredits extends JFrame{
         timeRange.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                try{
+                    CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                } catch (Exception exception){
+                    System.out.println(exception);
+                }
             }
         });
 
         creditSuggestionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveCreditSuggestion(dbConnection) ;
+                saveCreditSuggestion(dbConnection, workerId) ;
             }
         });
 
         allCredits.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selectCreditValues(dbConnection);
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                selectCreditValues(dbConnection, workerId);
+                try{
+                    CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                } catch (Exception exception){
+                    System.out.println(exception);
+                }
             }
         });
 
         creditSum.addKeyListener(new KeyAdapter() {
             public void keyReleased( KeyEvent e) {
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                try{
+                    CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                } catch (Exception exception){
+                    System.out.println(exception);
+                }
             }
         });
     }
 
-    private void saveCreditSuggestion( Connection dbConnection ) {
+    private void saveCreditSuggestion( Connection dbConnection, int workerId ) {
         CreditBase creditBase = (CreditBase) allCredits.getSelectedItem();
 
         try {
             dbConnection.setAutoCommit(false);
-            PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO credit(CustomerId, CreditSum, CreditTimeRange, PaymentInterval, CreditName, InterestRateId, Status, suggestion, originId) VALUES (?,?,?,?,?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO credit(CustomerId, CreditSum, CreditTimeRange, PaymentInterval, CreditName, InterestRateId, Status, suggestion, originId, firstSuggestionWorkerID) VALUES (?,?,?,?,?,?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
 
             stmt.setInt(1, creditBase.CustomerId );
             stmt.setInt(2, Integer.parseInt(creditSum.getText()));
@@ -94,14 +106,32 @@ public class ShowCustomerCredits extends JFrame{
             stmt.setString(7, CreditStatus.BEARBEITUNG.toString());
             stmt.setBoolean(8, true);
             stmt.setInt(9, creditBase.Id);
+            stmt.setInt(10, workerId);
             stmt.executeUpdate();
+
+            if(creditBase.FirstSuggestion != null){
+                PreparedStatement updateStmt = dbConnection.prepareStatement("UPDATE credit SET secondSuggestionWorkerID = ? Where ID = ? ;");
+                updateStmt.setInt(1, workerId);
+                updateStmt.setInt(2, creditBase.Id);
+                updateStmt.executeUpdate();
+            }else {
+                PreparedStatement updateStmt = dbConnection.prepareStatement("UPDATE credit SET firstSuggestionWorkerID = ? Where ID = ? ;");
+                updateStmt.setInt(1, workerId);
+                updateStmt.setInt(2, creditBase.Id);
+                updateStmt.executeUpdate();
+            }
+
+
             dbConnection.commit();
+
+            allCredits.removeAllItems();
+            loadInitialValues(dbConnection, workerId);
         }catch(Exception e){
             System.out.println("Kredit konnte nicht gespeichert werden " + e);
         }
     }
 
-    private void selectCreditValues( Connection dbConnection ) {
+    private void selectCreditValues( Connection dbConnection, int workerId) {
         CreditBase selectedCreditBase = (CreditBase) allCredits.getSelectedItem();
         try {
             PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE ID = ?;");
@@ -141,7 +171,7 @@ public class ShowCustomerCredits extends JFrame{
         return "";
     }
 
-    private void loadInitialValues( Connection dbConnection ) {
+    private void loadInitialValues( Connection dbConnection, int workerId) {
 
         payTimeRange.addItem(CreditTimeRange.MONTHLY);
         payTimeRange.addItem(CreditTimeRange.QUARTERLY);
@@ -153,8 +183,11 @@ public class ShowCustomerCredits extends JFrame{
         }
 
         try {
-            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT ID, CreditName, CreditSum, CustomerId, InterestRateId FROM `credit` WHERE status not LIKE ?;");
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT ID, CreditName, CreditSum, CustomerId, InterestRateId, firstSuggestionWorkerID FROM `credit` WHERE status not LIKE ? AND suggestion = ? AND (firstSuggestionWorkerID != ? OR firstSuggestionWorkerID is null)");
             stmtCredit.setString(1, CreditStatus.GENEHMIGT.toString());
+            stmtCredit.setBoolean(2, false);
+            stmtCredit.setInt(3, workerId);
+
             try (ResultSet resultSet = stmtCredit.executeQuery()) {
                 while (resultSet.next()) {
                     CreditBase creditBase = new CreditBase();
@@ -163,6 +196,7 @@ public class ShowCustomerCredits extends JFrame{
                     creditBase.CreditSum = resultSet.getInt("CreditSum");
                     creditBase.CustomerId = resultSet.getInt("CustomerId");
                     creditBase.InterestRateId = resultSet.getInt("InterestRateId");
+                    creditBase.FirstSuggestion = resultSet.getString("firstSuggestionWorkerID");
 
                     if(checkSuggestions(dbConnection, creditBase.Id)){
                         allCredits.addItem(creditBase);
@@ -173,11 +207,17 @@ public class ShowCustomerCredits extends JFrame{
         }catch(Exception e){
             System.out.println(e);
         }
+        if(allCredits.getSelectedItem() == null){
+            setVisible(false);
+            new WorkerMenu(dbConnection, workerId);
+        }else{
+            selectCreditValues(dbConnection, workerId);
+        }
     }
 
     private boolean checkSuggestions( Connection dbConnection, int originId ) {
         try {
-            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT Count(ID) as total FROM `credit` WHERE originId = ?");
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT Count(ID) as total FROM `credit` WHERE originId = ?;");
             stmtCredit.setInt(1, originId);
             try (ResultSet resultSet = stmtCredit.executeQuery()) {
                 if (resultSet.next()) {
@@ -214,6 +254,12 @@ public class ShowCustomerCredits extends JFrame{
                 int range = 1 * i;
                 timeRange.addItem(range);
             }
+        }
+
+        try{
+            CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+        } catch (Exception exception){
+            System.out.println(exception);
         }
     }
 

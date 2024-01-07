@@ -1,4 +1,6 @@
-package UI;
+package UI.Admin;
+
+import UI.Login.Login;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

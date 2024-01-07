@@ -1,8 +1,8 @@
-package UI;
+package UI.Superior;
 
 import Backend.CreditBase;
 import Backend.CreditStatus;
-import Backend.CreditTableRow;
+import UI.Superior.SuperiorMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -19,7 +19,6 @@ public class AcceptCreditMenu extends JFrame{
     private JButton acceptSecondSuggestion;
     private JComboBox allCredits;
     private JButton cancleButton;
-
     private int firstSuggestionId;
     private int secondSuggestionId;
 
@@ -36,7 +35,12 @@ public class AcceptCreditMenu extends JFrame{
         allCredits.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selectCreditValues(dbConnection);
+                try{
+                    selectCreditValues(dbConnection);
+
+                }catch (Exception exception){
+                    System.out.println(exception);
+                }
             }
         });
 
@@ -87,6 +91,12 @@ public class AcceptCreditMenu extends JFrame{
                     updateStmt.setInt(5, originId);
 
                     updateStmt.executeUpdate();
+
+                    PreparedStatement updateAllSuggestionsStmt = dbConnection.prepareStatement("UPDATE credit SET Status = ? Where originId = ? ;");
+                    updateAllSuggestionsStmt.setString(1, CreditStatus.ABGESCHLOSSEN.toString());
+                    updateAllSuggestionsStmt.setInt(2, originId);
+                    updateAllSuggestionsStmt.executeUpdate();
+
                     dbConnection.commit();
                 }
             }
@@ -94,6 +104,11 @@ public class AcceptCreditMenu extends JFrame{
         }catch(Exception e){
             System.out.println(e);
         }
+
+        allCredits.removeAllItems();
+        firstSuggestion.setText("");
+        secondSuggestion.setText("");
+        loadinitalValues(dbConnection);
     }
 
     private void selectCreditValues( Connection dbConnection ) {
@@ -128,8 +143,10 @@ public class AcceptCreditMenu extends JFrame{
 
     private void loadinitalValues( Connection dbConnection ) {
         try {
-            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE suggestion = ?");
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE suggestion = ? AND Status not LIKE ? AND Status not LIKE ?");
             stmtCredit.setBoolean(1, true);
+            stmtCredit.setString(2, CreditStatus.GENEHMIGT.toString());
+            stmtCredit.setString(3, CreditStatus.ABGESCHLOSSEN.toString());
             try (ResultSet resultSet = stmtCredit.executeQuery()) {
                 while (resultSet.next()) {
                     CreditBase creditBase = new CreditBase();

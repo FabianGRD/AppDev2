@@ -1,7 +1,10 @@
-package UI;
+package UI.Superior;
 
 import Backend.CreditListRenderer;
+import Backend.CreditStatus;
 import Backend.CreditTableRow;
+import UI.Login.Login;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,8 +52,10 @@ public class SuperiorMenu extends JFrame{
 
     private void loadInitialValues( Connection dbConnection ) {
         try {
-            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE suggestion = ?");
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE suggestion = ? AND Status not LIKE ? AND Status not LIKE ?");
             stmtCredit.setBoolean(1, true);
+            stmtCredit.setString(2, CreditStatus.GENEHMIGT.toString());
+            stmtCredit.setString(3, CreditStatus.ABGESCHLOSSEN.toString());
             try (ResultSet resultSet = stmtCredit.executeQuery()) {
                 while (resultSet.next()) {
                     CreditTableRow creditTableRow = new CreditTableRow();

@@ -1,7 +1,8 @@
-package UI;
+package UI.Customer;
 
 import Backend.CreditStatus;
 import Backend.CreditTimeRange;
+import UI.Customer.CustomerMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -16,7 +17,6 @@ import java.sql.SQLException;
 public class CreditMenu extends JFrame{
     private JPanel panel;
     private JTextField creditSum;
-    private JLabel CreditSum;
     private JComboBox timeRange;
     private JTextField interestRate;
     private JComboBox payTimeRange;
@@ -38,7 +38,6 @@ public class CreditMenu extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 SetTimeRangeValues();
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
             }
         });
 
@@ -53,7 +52,11 @@ public class CreditMenu extends JFrame{
         timeRange.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                try{
+                   CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                } catch (Exception exception){
+                   System.out.println(exception);
+                }
             }
         });
 
@@ -65,16 +68,61 @@ public class CreditMenu extends JFrame{
         });
 
         creditSum.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
-                CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                checkInputValue();
+                try{
+                    CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+                } catch (Exception exception){
+                    System.out.println(exception);
+                }
             }
         });
     }
 
-    private void CalculateCreditRate(int timeRange, int creditSum) {
-        double payAmount = creditSum/timeRange;
-        String payAmountString = "" + payAmount;
-        payAmountPerTimeSlot.setText(payAmountString);
+    private void checkInputValue() {
+        String fullString = creditSum.getText();
+        String lastChar = fullString.substring(fullString.length() - 1);
+        String numbers = "0123456789";
+        if(!numbers.contains(lastChar)){
+            fullString = fullString.substring(0, fullString.length() - 1);
+            creditSum.setText(fullString);
+        }
+    }
+
+    private void CalculateCreditRate(int timeRangeValue, int creditSumValue) {
+        String fullInput = creditSum.getText();
+        double intrestRateValue = Double.parseDouble(interestRate.getText().toString());
+        int months = 0;
+        double years = 0;
+        double totalSum = creditSumValue;
+
+        switch ((CreditTimeRange)payTimeRange.getSelectedItem()) {
+            case MONTHLY:
+                years = timeRangeValue / 12;
+                intrestRateValue = (intrestRateValue + 100) / 100;
+                totalSum = creditSumValue * Math.pow(intrestRateValue, years);
+                break;
+            case QUARTERLY:
+                months  = timeRangeValue * 3;
+                years = months / 12;
+                intrestRateValue = (intrestRateValue + 100) / 100;
+                totalSum = creditSumValue * Math.pow(intrestRateValue, years);
+                break;
+            case YEARLY:
+                intrestRateValue = (intrestRateValue + 100) / 100;
+                totalSum = creditSumValue * Math.pow(intrestRateValue, timeRangeValue);
+                break;
+            default:
+                break;
+        }
+        if(fullInput.matches(".*[^a-z].*")) {
+            double payAmount = totalSum / timeRangeValue;
+            double d = Math.pow(10, 2);
+            payAmount = Math.round(payAmount * d) / d;
+            String payAmountString = "" + payAmount;
+            payAmountPerTimeSlot.setText(payAmountString);
+        }
     }
 
     private void SaveCredit(Connection dbConnection, int customerId, int intrestRateId) {
@@ -177,6 +225,13 @@ public class CreditMenu extends JFrame{
                 int range = 1 * i;
                 timeRange.addItem(range);
             }
+        }
+
+        timeRange.setSelectedIndex(0);
+        try{
+            CalculateCreditRate(Integer.parseInt(timeRange.getSelectedItem().toString()), Integer.parseInt(creditSum.getText()));
+        } catch (Exception exception){
+            System.out.println(exception);
         }
     }
 }

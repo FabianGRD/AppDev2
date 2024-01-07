@@ -9,6 +9,7 @@ public class CreditBase {
     public int CustomerId;
     public int InterestRateId;
     public int OriginId;
+    public String FirstSuggestion;
 
 
 

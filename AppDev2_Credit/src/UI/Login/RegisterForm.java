@@ -1,8 +1,12 @@
-package UI;
+package UI.Login;
+
+import UI.Login.Login;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.*;
 
 public class RegisterForm extends JFrame{
@@ -44,6 +48,23 @@ public class RegisterForm extends JFrame{
                 new Login(dbConnection);
             }
         });
+
+        postalcode.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased( KeyEvent e) {
+                checkInputValue();
+            }
+        });
+    }
+
+    private void checkInputValue() {
+        String fullString = postalcode.getText();
+        String lastChar = fullString.substring(fullString.length() - 1);
+        String numbers = "0123456789";
+        if(!numbers.contains(lastChar) || fullString.length() > 5){
+            fullString = fullString.substring(0, fullString.length() - 1);
+            postalcode.setText(fullString);
+        }
     }
 
     private void registerCustomer(Connection dbConnection) {
@@ -56,8 +77,6 @@ public class RegisterForm extends JFrame{
             password.getText() != "") {
             try{
                 dbConnection.setAutoCommit(false);
-
-                Statement statement = dbConnection.createStatement();
 
                 PreparedStatement stmt = dbConnection.prepareStatement("INSERT INTO customer (firstname, lastname, street, postalcode, city) VALUES(?,?,?,?,?) ", PreparedStatement.RETURN_GENERATED_KEYS);
                 stmt.setString(1, firstname.getText());

@@ -1,7 +1,11 @@
-package UI;
+package UI.Login;
 
 import Backend.WorkerPermission;
-import Database.DBConnection;
+import UI.Admin.AdminMenu;
+import UI.Customer.CustomerMenu;
+import UI.Manager.ManagerMenu;
+import UI.Superior.SuperiorMenu;
+import UI.Worker.WorkerMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

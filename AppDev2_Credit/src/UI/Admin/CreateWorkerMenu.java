@@ -1,7 +1,7 @@
-package UI;
+package UI.Admin;
 
-import Backend.CreditTimeRange;
 import Backend.WorkerPermission;
+import UI.Admin.AdminMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

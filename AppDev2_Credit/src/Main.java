@@ -1,5 +1,5 @@
 import Database.DBConnection;
-import UI.Login;
+import UI.Login.Login;
 
 import java.sql.*;
 

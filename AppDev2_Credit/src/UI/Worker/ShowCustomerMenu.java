@@ -1,6 +1,7 @@
-package UI;
+package UI.Worker;
 
 import Backend.*;
+import UI.Worker.WorkerMenu;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -25,7 +26,7 @@ public class ShowCustomerMenu extends JFrame {
         setSize(700, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        loadInitialValues(dbConnection);
+        loadInitialValues(dbConnection, workerId);
 
         returnButton.addActionListener(new ActionListener() {
             @Override
@@ -38,8 +39,7 @@ public class ShowCustomerMenu extends JFrame {
         acceptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e) {
-                setCreditworthiness(dbConnection);
-                calculateCustomerCreditsNew(dbConnection);
+                setCreditworthiness(dbConnection, workerId);
             }
         });
     }
@@ -83,7 +83,7 @@ public class ShowCustomerMenu extends JFrame {
         }
     }
 
-    private void setCreditworthiness( Connection dbConnection ) {
+    private void setCreditworthiness( Connection dbConnection, int workerId ) {
         CustomerBase customerBase = (CustomerBase) allCustomers.getSelectedItem();
         try {
             dbConnection.setAutoCommit(false);
@@ -98,9 +98,13 @@ public class ShowCustomerMenu extends JFrame {
         }catch(Exception e){
             System.out.println(e);
         }
+
+        calculateCustomerCreditsNew(dbConnection);
+        allCustomers.removeAllItems();
+        loadInitialValues(dbConnection, workerId);
     }
 
-    private void loadInitialValues( Connection dbConnection ) {
+    private void loadInitialValues( Connection dbConnection, int workerId) {
         try {
             String selectQuery = "SELECT * FROM customer where bonitaet is null";
 
@@ -116,6 +120,11 @@ public class ShowCustomerMenu extends JFrame {
             }
         }catch(Exception e){
             System.out.println(e);
+        }
+
+        if(allCustomers.getSelectedItem() == null){
+            setVisible(false);
+            new WorkerMenu(dbConnection, workerId);
         }
     }
 }

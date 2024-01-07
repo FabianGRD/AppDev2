@@ -1,7 +1,8 @@
-package UI;
+package UI.Manager;
 
 import Backend.CreditBase;
 import Backend.CreditStatus;
+import UI.Login.Login;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -1,6 +1,7 @@
-package UI;
+package UI.Worker;
 
 import Backend.*;
+import UI.Login.Login;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -36,7 +37,7 @@ public class WorkerMenu extends JFrame {
         customerList.setModel(customerListModel);
         customerList.setCellRenderer(new CustomerListRenderer());
 
-        loadInitialValues(dbConnection);
+        loadInitialValues(dbConnection, workerId);
 
         logoutButton.addActionListener(new ActionListener() {
             @Override
@@ -63,7 +64,7 @@ public class WorkerMenu extends JFrame {
         });
     }
 
-    private void loadInitialValues( Connection dbConnection ) {
+    private void loadInitialValues( Connection dbConnection, int workerId ) {
         try {
             PreparedStatement stmtCustomer = dbConnection.prepareStatement("SELECT * FROM customer;");
             try (ResultSet resultSet = stmtCustomer.executeQuery()) {
@@ -80,8 +81,11 @@ public class WorkerMenu extends JFrame {
                 }
             }
 
-            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE status not LIKE ?;");
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE status not LIKE ? AND suggestion = ? AND (firstSuggestionWorkerID != ? OR firstSuggestionWorkerID is null);");
             stmtCredit.setString(1, CreditStatus.GENEHMIGT.toString());
+            stmtCredit.setBoolean(2, false);
+            stmtCredit.setInt(3, workerId);
+
             try (ResultSet resultSet = stmtCredit.executeQuery()) {
                 while (resultSet.next()) {
                         CreditTableRow creditTableRow = new CreditTableRow();
