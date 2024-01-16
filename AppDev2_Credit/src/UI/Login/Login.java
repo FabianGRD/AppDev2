@@ -4,6 +4,7 @@ import Backend.WorkerPermission;
 import UI.Admin.AdminMenu;
 import UI.Customer.CustomerMenu;
 import UI.Manager.ManagerMenu;
+import UI.Readme.Readme;
 import UI.Superior.SuperiorMenu;
 import UI.Worker.WorkerMenu;
 
@@ -20,6 +21,7 @@ public class Login extends JFrame{
     private JButton loginButton;
     private JButton exitButton;
     private JButton registerButton;
+    private JButton readmeButton;
 
     public Login(Connection dbConnection){
         setContentPane(panel);
@@ -47,6 +49,14 @@ public class Login extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 registerCustomer(dbConnection);
+            }
+        });
+
+        readmeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+                new Readme(dbConnection);
             }
         });
     }

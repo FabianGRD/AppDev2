@@ -103,6 +103,11 @@ public class RegisterForm extends JFrame{
 
                 dbConnection.commit();
             }catch(SQLException exception){
+                try {
+                    dbConnection.rollback();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 System.out.println(exception);
             }
         }else {
@@ -113,3 +118,4 @@ public class RegisterForm extends JFrame{
         new Login(dbConnection);
     }
 }
+
