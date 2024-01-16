@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 16. Jan 2024 um 19:01
+-- Erstellungszeit: 16. Jan 2024 um 19:27
 -- Server-Version: 10.4.28-MariaDB
 -- PHP-Version: 8.2.4
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Datenbank: `appdev2`
+-- Datenbank: `appdev2_kreditanfrage`
 --
 
 -- --------------------------------------------------------
