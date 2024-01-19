@@ -28,7 +28,7 @@ public class CreditMenu extends JFrame{
     public CreditMenu(Connection dbConnection, int customerId){
         setContentPane(panel);
         setVisible(true);
-        setTitle("Customer Menu");
+        setTitle("Credit Menu");
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

@@ -82,7 +82,9 @@
             <preferred-size width="188" height="30"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <editable value="false"/>
+        </properties>
       </component>
       <component id="615ed" class="javax.swing.JComboBox" binding="timeRange">
         <constraints>
@@ -90,7 +92,9 @@
             <preferred-size width="188" height="30"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <editable value="true"/>
+        </properties>
       </component>
       <component id="8af57" class="javax.swing.JComboBox" binding="payTimeRange">
         <constraints>
@@ -99,6 +103,7 @@
           </grid>
         </constraints>
         <properties>
+          <editable value="true"/>
           <enabled value="true"/>
         </properties>
       </component>

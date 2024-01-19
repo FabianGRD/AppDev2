@@ -23,7 +23,7 @@ public class ManagerMenu extends JFrame {
         setContentPane(panel);
         setVisible(true);
 
-        setTitle("Worker Menu");
+        setTitle("Manager Menu");
         setSize(700, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -69,6 +69,9 @@ public class ManagerMenu extends JFrame {
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
+
+        allCredits.removeAllItems();
+        loadInitialValues(dbConnection);
     }
 
     private void loadInitialValues( Connection dbConnection ) {

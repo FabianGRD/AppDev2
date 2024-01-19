@@ -20,7 +20,7 @@ public class DeleteWorkerMenu extends JFrame {
     public DeleteWorkerMenu( Connection dbConnection, int workerId) {
         setContentPane(panel);
         setVisible(true);
-        setTitle("Customer Menu");
+        setTitle("Delete User Menu");
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

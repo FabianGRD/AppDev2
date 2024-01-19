@@ -22,7 +22,7 @@ public class ShowCustomerMenu extends JFrame {
         setContentPane(panel);
         setVisible(true);
 
-        setTitle("Worker Menu");
+        setTitle("Bonitaet Menu");
         setSize(700, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

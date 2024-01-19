@@ -25,7 +25,7 @@ public class RegisterForm extends JFrame{
     public RegisterForm(Connection dbConnection, JTextField usernameInput, JPasswordField passwordInput){
         setContentPane(panel);
         setVisible(true);
-        setTitle("Registrieren");
+        setTitle("Register");
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

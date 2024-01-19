@@ -21,7 +21,7 @@ public class CreateWorkerMenu extends JFrame{
     public CreateWorkerMenu( Connection dbConnection, int workerId) {
         setContentPane(panel);
         setVisible(true);
-        setTitle("Admin Menu");
+        setTitle("Create User Menu");
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

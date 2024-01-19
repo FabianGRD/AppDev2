@@ -37,7 +37,11 @@ public class ShowCustomerCredits extends JFrame{
         payTimeRange.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent e) {
-                SetTimeRangeValues();
+                try{
+                    SetTimeRangeValues();
+                } catch (Exception exception){
+                    System.out.println(exception);
+                }
             }
         });
 
@@ -125,6 +129,8 @@ public class ShowCustomerCredits extends JFrame{
             dbConnection.commit();
 
             allCredits.removeAllItems();
+            payTimeRange.removeAllItems();
+            timeRange.removeAllItems();
             loadInitialValues(dbConnection, workerId);
         }catch(Exception e){
             System.out.println("Kredit konnte nicht gespeichert werden " + e);
@@ -213,6 +219,12 @@ public class ShowCustomerCredits extends JFrame{
         }else{
             selectCreditValues(dbConnection, workerId);
         }
+
+        try{
+            SetTimeRangeValues();
+        } catch (Exception exception){
+            System.out.println(exception);
+        }
     }
 
     private boolean checkSuggestions( Connection dbConnection, int originId ) {
@@ -264,8 +276,37 @@ public class ShowCustomerCredits extends JFrame{
     }
 
     private void CalculateCreditRate(int timeRange, int creditSum) {
-        double payAmount = creditSum/timeRange;
-        String payAmountString = "" + payAmount;
-        payAmountPerTimeSlot.setText(payAmountString);
+        String fullInput = "" + creditSum;
+        double intrestRateValue = Double.parseDouble(interestRate.getText().toString());
+        int months = 0;
+        double years = 0;
+        double totalSum = creditSum;
+
+        switch ((CreditTimeRange)payTimeRange.getSelectedItem()) {
+            case MONTHLY:
+                years = timeRange / 12;
+                intrestRateValue = (intrestRateValue + 100) / 100;
+                totalSum = creditSum * Math.pow(intrestRateValue, years);
+                break;
+            case QUARTERLY:
+                months  = timeRange * 3;
+                years = months / 12;
+                intrestRateValue = (intrestRateValue + 100) / 100;
+                totalSum = creditSum * Math.pow(intrestRateValue, years);
+                break;
+            case YEARLY:
+                intrestRateValue = (intrestRateValue + 100) / 100;
+                totalSum = creditSum * Math.pow(intrestRateValue, timeRange);
+                break;
+            default:
+                break;
+        }
+        if(fullInput.matches(".*[^a-z].*")) {
+            double payAmount = totalSum / timeRange;
+            double d = Math.pow(10, 2);
+            payAmount = Math.round(payAmount * d) / d;
+            String payAmountString = "" + payAmount;
+            payAmountPerTimeSlot.setText(payAmountString);
+        }
     }
 }

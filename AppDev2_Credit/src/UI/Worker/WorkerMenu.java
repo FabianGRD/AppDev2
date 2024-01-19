@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class WorkerMenu extends JFrame {
     private JPanel panel;
@@ -94,6 +95,7 @@ public class WorkerMenu extends JFrame {
                         creditTableRow.CreditSum = resultSet.getString("CreditSum");
                         creditTableRow.TimeRange = resultSet.getString("CreditTimeRange");
                         creditTableRow.PaymentInterval = resultSet.getString("PaymentInterval");
+                        creditTableRow.InterestRate = GetInterestRate(dbConnection, resultSet.getInt("InterestRateId"));
                         creditTableRow.Status = resultSet.getString("Status");
 
                         if(checkSuggestions(dbConnection, creditTableRow.ID)){
@@ -125,5 +127,25 @@ public class WorkerMenu extends JFrame {
             System.out.println(e);
         }
         return true;
+    }
+
+    private String GetInterestRate(Connection dbConnection, int interestRateId){
+        String selectQuery = "SELECT * FROM initialcreditvalues where ID = ?;";
+        try {
+            PreparedStatement stmt = dbConnection.prepareStatement(selectQuery);
+            stmt.setInt(1, interestRateId);
+            try(ResultSet resultSet = stmt.executeQuery()){
+                if (resultSet.next()) {
+                    String interestRateFromDB = resultSet.getString("InterestRate");
+                    return interestRateFromDB;
+                }else{
+                    System.out.println("Kein Zinssatz gefunden");
+                }
+            }
+        }catch (SQLException exception){
+            System.out.println(exception);
+        }
+
+        return "";
     }
 }

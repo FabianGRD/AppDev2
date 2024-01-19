@@ -15,7 +15,7 @@ public class Readme extends JFrame{
     public Readme( Connection dbConnection) {
         setContentPane(panel);
         setVisible(true);
-        setTitle("Login");
+        setTitle("Readme");
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
