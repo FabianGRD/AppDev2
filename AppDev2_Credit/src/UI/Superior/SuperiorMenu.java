@@ -53,7 +53,7 @@ public class SuperiorMenu extends JFrame{
 
     private void loadInitialValues( Connection dbConnection ) {
         try {
-            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE suggestion = ? AND Status not LIKE ? AND Status not LIKE ? Orderby CreditName");
+            PreparedStatement stmtCredit = dbConnection.prepareStatement("SELECT * FROM `credit` WHERE suggestion = ? AND Status not LIKE ? AND Status not LIKE ? Order by CreditName");
             stmtCredit.setBoolean(1, true);
             stmtCredit.setString(2, CreditStatus.GENEHMIGT.toString());
             stmtCredit.setString(3, CreditStatus.ABGESCHLOSSEN.toString());
